@@ -18,7 +18,7 @@ from keras.constraints import maxnorm
 DATA_DIR = 'data/'
 TRAIN_FILE = 'train_set.txt'
 # Max number of words in each sequence.
-MAX_SEQUENCE_LENGTH = 100
+MAX_SEQUENCE_LENGTH = 50
 SKIP = 2
 # The name of the model.
 STAMP = 'doc_maker'
@@ -39,23 +39,17 @@ class Corpus(object):
 
 
 
-# Sample from the predictions using a random threshold. Return the one-hot encoded sample.
-def sample(prediction,char_size):
-	# Random uniform threshold
-	r = random.uniform(0,1)
-	s = 0
-	char_id = len(prediction) - 1
-	for i,pr in enumerate(prediction):
-		s += pr 
-		if s >= r:
-			char_id = i
-			break
-
-	# One hot encode.
-	char_one_hot = np.zeros((char_size))
-	char_one_hot[char_id] = 1.
-
-	return char_one_hot
+# Sample from the predictions using a temperature. Return the one-hot encoded sample.
+# High temperature increases the variance of the generated text. Low temperature results in more confident text.
+def sample(prediction,temperature):
+	# helper function that samples from a probability array
+	prediction = np.asarray(prediction).astype('float64')
+	prediction = np.log(prediction) / temperature
+	exp_prediction = np.exp(prediction)
+	prediction = exp_prediction / np.sum(exp_prediction)
+	probabilities = np.random.multinomial(1, prediction, 1)
+	
+	return probabilities
 
 
 def read_data():
@@ -65,7 +59,8 @@ def read_data():
 	X_data = ''
 	for c,vector in enumerate(train_set):  # load one vector into memory at a time
 		X_data += vector
-		if c > 30000: break
+		# This is the number of lines to read. Increases the memory requirements though.
+		if c > 6000: break
 		if c % 10000 == 0: 
 			print c
 
@@ -87,7 +82,7 @@ def read_data():
 	sections = []
 	next_chars = []
 	# We iterate over the data and split to sections.
-	for i in range(0,len(X_data)-MAX_SEQUENCE_LENGTH,MAX_SEQUENCE_LENGTH):
+	for i in range(0,len(X_data)-MAX_SEQUENCE_LENGTH,SKIP):
 		sections.append(X_data[i: i + MAX_SEQUENCE_LENGTH])
 		next_chars.append(X_data[i + MAX_SEQUENCE_LENGTH])
 
@@ -112,7 +107,7 @@ X_train, y_train, char2id, id2char = read_data()
 char_size = X_train.shape[2]
 
 #========================================================== Build the net ===================================================
-batch_size = 256
+batch_size = 512
 epochs = 2000
 starting_text = 'computers are amazing'
 
@@ -153,12 +148,12 @@ for epoch in range(epochs):
 	if epoch % 10 == 0:
 		model.save_weights(STAMP+'.hdf5', True)
 	# Generate text
-	if epoch % 100 == 0:
+	if epoch % 50 == 0:
 		test_generated = ''
 		test_generated += starting_text
 		sys.stdout.write(test_generated)
 		# Generate 400 characters.
-		for i in range(400):
+		for i in range(1000):
 			# First vectorize the starting text.
 			x = np.zeros((1, MAX_SEQUENCE_LENGTH, char_size))
 			for t, char in enumerate(starting_text):
@@ -166,7 +161,7 @@ for epoch in range(epochs):
 			# Predict using the previously generated text as input.
 			preds = model.predict(x, verbose=0)[0]
 			# Sample and decode the prediction.
-			next_char_one_hot = sample(preds,char_size)
+			next_char_one_hot = sample(preds,1.0)
 			next_char = id2char[np.argmax(next_char_one_hot)]
 			# Append prediction to the generated text.
 			test_generated += next_char
