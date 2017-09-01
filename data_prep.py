@@ -3,7 +3,6 @@ import numpy as np
 import random
 import time
 import re
-import csv
 import pandas as pd
 import os
 
@@ -33,12 +32,12 @@ def read_data():
 	return train_df,test_df
 
 def write_data(X_train,X_test):
-	# Write the outputs to .csv
+	# Write the outputs to .txt
 	print 'Writting...'
-	with open("data/train_set.csv", "wb") as f:
+	with open("data/train_set.txt", "wb") as f:
 	    for x in X_train:
 	    	f.write('%s\n' %x)
-	with open("data/test_set.csv", "wb") as f:
+	with open("data/test_set.txt", "wb") as f:
 	    for x in X_test:
 	    	f.write('%s\n' %x)
 

@@ -16,7 +16,7 @@ from keras.constraints import maxnorm
 #========================================================= Global variables =================================================
 # Modify this paths as well
 DATA_DIR = 'data/'
-TRAIN_FILE = 'train_set.csv'
+TRAIN_FILE = 'train_set.txt'
 # Max number of words in each sequence.
 MAX_SEQUENCE_LENGTH = 100
 SKIP = 2
@@ -120,10 +120,10 @@ input_shape = (X_train.shape[1],X_train.shape[2],)
 
 input_layer = Input(shape=(input_shape), dtype='float32')
 
-lstm1 = LSTM(512, activation='tanh', recurrent_activation='hard_sigmoid', recurrent_dropout=0.0, dropout=0.2, 
+lstm1 = LSTM(300, activation='tanh', recurrent_activation='hard_sigmoid', recurrent_dropout=0.0, dropout=0.2, 
 			kernel_initializer='glorot_uniform', kernel_constraint=maxnorm(3), return_sequences=True)(input_layer)
 
-lstm2 = LSTM(512, activation='tanh', recurrent_activation='hard_sigmoid', recurrent_dropout=0.0, dropout=0.5, 
+lstm2 = LSTM(300, activation='tanh', recurrent_activation='hard_sigmoid', recurrent_dropout=0.0, dropout=0.5, 
 			kernel_initializer='glorot_uniform', kernel_constraint=maxnorm(3), return_sequences=False)(lstm1)
 
 drop = Dropout(0.5)(lstm2)
@@ -153,7 +153,7 @@ for epoch in range(epochs):
 	if epoch % 10 == 0:
 		model.save_weights(STAMP+'.hdf5', True)
 	# Generate text
-	if epoch % 10 == 0:
+	if epoch % 100 == 0:
 		test_generated = ''
 		test_generated += starting_text
 		sys.stdout.write(test_generated)
