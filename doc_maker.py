@@ -9,7 +9,6 @@ from keras.utils.np_utils import to_categorical
 from keras.layers import Dense, Input, LSTM, Embedding, Dropout, Activation
 from keras.models import Model
 from keras.layers.normalization import BatchNormalization
-from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.constraints import maxnorm
 
 
@@ -20,6 +19,7 @@ TRAIN_FILE = 'train_set.txt'
 # Max number of words in each sequence.
 MAX_SEQUENCE_LENGTH = 50
 SKIP = 2
+LINES_TO_READ = 6000
 # The name of the model.
 STAMP = 'doc_maker'
 
@@ -32,7 +32,7 @@ class Corpus(object):
 		self.target_file = target_file
 		self.__iter__()
 
-	# Yield one row per iteration. Each row is an abstract (preprocessed)
+	# Yield one row per iteration.
 	def __iter__(self):
 		for i,line in enumerate(open(self.in_file)):
 			yield line.strip()+' '
@@ -60,7 +60,7 @@ def read_data():
 	for c,vector in enumerate(train_set):  # load one vector into memory at a time
 		X_data += vector
 		# This is the number of lines to read. Increases the memory requirements though.
-		if c > 6000: break
+		if c > LINES_TO_READ: break
 		if c % 10000 == 0: 
 			print c
 
@@ -152,7 +152,7 @@ for epoch in range(epochs):
 		test_generated = ''
 		test_generated += starting_text
 		sys.stdout.write(test_generated)
-		# Generate 400 characters.
+		# Generate 1000 characters.
 		for i in range(1000):
 			# First vectorize the starting text.
 			x = np.zeros((1, MAX_SEQUENCE_LENGTH, char_size))
