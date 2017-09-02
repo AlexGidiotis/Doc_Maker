@@ -19,7 +19,7 @@ TRAIN_FILE = 'train_set.txt'
 # Max number of words in each sequence.
 MAX_SEQUENCE_LENGTH = 50
 SKIP = 2
-LINES_TO_READ = 6000
+LINES_TO_READ = 2000
 # The name of the model.
 STAMP = 'doc_maker'
 
@@ -117,12 +117,14 @@ input_layer = Input(shape=(input_shape), dtype='float32')
 
 lstm1 = LSTM(300, activation='tanh', recurrent_activation='hard_sigmoid', recurrent_dropout=0.0, dropout=0.2, 
 			kernel_initializer='glorot_uniform', kernel_constraint=maxnorm(3), return_sequences=True)(input_layer)
+lstm1 = BatchNormalization()(lstm1)
 
 lstm2 = LSTM(300, activation='tanh', recurrent_activation='hard_sigmoid', recurrent_dropout=0.0, dropout=0.5, 
 			kernel_initializer='glorot_uniform', kernel_constraint=maxnorm(3), return_sequences=False)(lstm1)
+lstm2 = BatchNormalization()(lstm2)
 
-drop = Dropout(0.5)(lstm2)
-dense = Dense(char_size, activation='softmax', kernel_initializer='glorot_uniform')(drop)
+dropout = Dropout(0.5)(lstm2)
+dense = Dense(char_size, activation='softmax', kernel_initializer='glorot_uniform')(dropout)
 
 
 model = Model(input_layer,dense)
@@ -161,7 +163,7 @@ for epoch in range(epochs):
 			# Predict using the previously generated text as input.
 			preds = model.predict(x, verbose=0)[0]
 			# Sample and decode the prediction.
-			next_char_one_hot = sample(preds,1.0)
+			next_char_one_hot = sample(preds,0.6)
 			next_char = id2char[np.argmax(next_char_one_hot)]
 			# Append prediction to the generated text.
 			test_generated += next_char
