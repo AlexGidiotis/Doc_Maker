@@ -52,6 +52,11 @@ def sample(prediction,temperature):
 	return probabilities
 
 
+# Reads the data and splits into 50 character sequences.
+# Returns: X_train: num samples x seq_length x num characters array with the vectorized training sequences
+#		   y_train: num samples x num characters array with the next character following the sequence
+#		   char2id: dictionary that maps characters to ids
+#		   id2char: dictionary that maps ids to characters (for decoding)
 def read_data():
 	train_set = Corpus(DATA_DIR+TRAIN_FILE)
 
