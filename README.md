@@ -15,7 +15,7 @@ A good way to check for overfitting is to monitor the validation loss. If at som
 
 One pass over all training batches takes approximately 20 seconds in an nvidia 1060 gtx. In order to start getting good outputs you should train for at least 500 epochs.
 
-** Be careful with the memory usage. ** Loading and tokenizing 5000 lines of text can easily take up to 5GB of memory. You can control the amount of lines by modifying the LINES_TO_READ parameter in the doc_maker script. 
+**Be careful with the memory usage.** Loading and tokenizing 5000 lines of text can easily take up to 5GB of memory. You can control the amount of lines by modifying the LINES_TO_READ parameter in the doc_maker script. 
 
 ## Dependencies:
 
